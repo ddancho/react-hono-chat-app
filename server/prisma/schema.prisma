@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(cuid())
+  username String @db.VarChar()
+  email    String @unique @db.VarChar()
+  password String @map("password") @db.VarChar()
+
+  profilePictureType String? @db.VarChar()
+  profilePicture     Bytes?  @map("profile_picture")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sentMessages     Message[] @relation("sentMessages")
+  receivedMessages Message[] @relation("receivedMessages")
+
+  @@map("Users")
+}
+
+model Message {
+  id        Int     @id @default(autoincrement())
+  text      String?
+  imageType String? @db.VarChar()
+  image     Bytes?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sender   User   @relation(name: "sentMessages", fields: [senderId], references: [id])
+  senderId String
+
+  receiver   User   @relation(name: "receivedMessages", fields: [receiverId], references: [id])
+  receiverId String
+
+  @@map("Messages")
+}
+
+model UserSocket {
+  id       Int    @id @default(autoincrement())
+  userId   String @unique
+  socketId String @unique
+
+  @@map("UsersSockets")
+}
